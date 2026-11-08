@@ -1,0 +1,1 @@
+-- Stage 2 intentionally introduces no business tables.

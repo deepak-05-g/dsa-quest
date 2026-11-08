@@ -1,5 +1,6 @@
 node_modules/
 dist/
+target/
 coverage/
 .vite/
 .env
@@ -12,4 +13,3 @@ coverage/
 .vscode/*
 !.vscode/extensions.json
 !.vscode/settings.json
-
