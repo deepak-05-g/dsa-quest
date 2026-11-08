@@ -1,43 +1,81 @@
-# DSA QUEST 🗡️
+# DSA QUEST
 
-> **Learn. Solve. Level Up.**
+> Learn. Solve. Level Up.
 
-A gamified Data Structures and Algorithms learning platform built for placement preparation.
+DSA QUEST is a gamified Data Structures and Algorithms learning platform for students preparing for coding interviews. It will combine structured learning, visual explanations, Java practice, and measurable progression without sacrificing technical depth.
 
-## Overview
+## Stage 1 foundation
 
-DSA QUEST turns DSA learning into an interactive game where you travel through worlds, unlock levels, visualize algorithms, write Java code, and earn XP as you master each topic.
+Stage 1 establishes the frontend application shell and repository architecture. It intentionally does not include authentication, lessons, dashboards, visualizers, code execution, or progression data.
 
-## Tech Stack
+## Technology stack
 
-**Frontend:** React · TypeScript · Vite · Tailwind CSS · shadcn/ui · Phaser 3 · Monaco Editor
+- **Frontend:** React, TypeScript, Vite, Tailwind CSS, React Router
+- **UI architecture:** shadcn/ui-compatible components using Tailwind design tokens
+- **Planned backend:** Java, Spring Boot, Spring Security, JWT, Spring Data JPA, PostgreSQL, Flyway, Maven
+- **Planned code execution:** Judge0 API through a secured backend integration
 
-**Backend:** Java · Spring Boot · Spring Security · JWT · Spring Data JPA · PostgreSQL · Flyway · Maven
+## Project structure
 
-**Infrastructure:** Docker · Docker Compose · GitHub Actions
+```text
+frontend/
+  public/
+  src/
+    app/          Application providers and root composition
+    components/   Shared non-domain components
+    features/     Domain-oriented feature modules
+    hooks/        Reusable React hooks
+    layout/       Page and navigation layout components
+    lib/          Framework and utility helpers
+    routes/       Route definitions
+    services/     Backend integration boundaries
+    styles/       Global styles and design tokens
+    types/        Shared frontend types
+    App.tsx
+    main.tsx
+backend/          Reserved for the future Spring Boot service
+```
 
-**Code Execution:** Judge0 API
+The backend will expose versioned REST endpoints under `/api/v1`. The frontend will access them through typed service modules, with the API base URL supplied by environment configuration. Authentication, persistence, and business logic remain future-stage work.
 
-## Getting Started
+## Prerequisites
 
-> Documentation coming in Stage 7 — Deployment & Release.
+- Node.js 22+
+- npm 11+
+- Java 21+ and Maven for future backend stages
+- PostgreSQL for future backend stages
 
-## Project Status
+## Frontend setup
 
-🚧 **In active development** — following a staged build roadmap.
+```powershell
+cd frontend
+npm install
+npm run dev
+```
 
-| Stage | Description | Status |
-|-------|-------------|--------|
-| 0 | Workspace Inspection | ✅ Complete |
-| 1 | Frontend Foundation | 🔄 In Progress |
-| 2 | Backend Foundation | ⏳ Upcoming |
-| 3 | Learning Engine | ⏳ Upcoming |
-| 4 | Visualizer & Coding Interface | ⏳ Upcoming |
-| 5 | Code Execution Engine | ⏳ Upcoming |
-| 6 | Admin & Quality | ⏳ Upcoming |
-| 7 | Deployment & Release | ⏳ Upcoming |
+Other checks:
 
-## License
+```powershell
+npm run typecheck
+npm run lint
+npm run build
+```
 
-MIT
+Copy `frontend/.env.example` to `frontend/.env.local` for local configuration. Never commit environment files containing secrets.
+
+## Environment conventions
+
+- `VITE_` variables are public build-time frontend configuration.
+- Backend secrets must never be placed in frontend environment files.
+- Future backend variables will use names such as `DATABASE_URL`, `JWT_SECRET`, and `JUDGE0_API_KEY`.
+
+## Roadmap
+
+1. **Stage 1:** Foundation and architecture setup
+2. **Stage 2:** Spring Boot backend foundation
+3. **Stage 3:** Curriculum and learning engine
+4. **Stage 4:** Visualizers and Java coding interface
+5. **Stage 5:** Isolated code execution
+6. **Stage 6:** Administration, testing, and quality
+7. **Stage 7:** Deployment and release
 

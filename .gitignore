@@ -1,77 +1,15 @@
-# ============================================================
-# DSA QUEST — .gitignore
-# ============================================================
-
-# ----- Node / Frontend -----
 node_modules/
-frontend/node_modules/
 dist/
-frontend/dist/
-frontend/.vite/
-.vite/
-*.local
-
-# ----- Environment Variables (NEVER commit secrets) -----
-.env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-frontend/.env
-frontend/.env.local
-backend/.env
-backend/src/main/resources/application-local.yml
-backend/src/main/resources/application-secret.yml
-
-# ----- Java / Spring Boot / Maven -----
-backend/target/
-*.class
-*.jar
-*.war
-*.ear
-*.nar
-*.zip
-*.tar.gz
-*.rar
-backend/.mvn/wrapper/maven-wrapper.jar
-# Keep the wrapper properties
-!backend/.mvn/wrapper/maven-wrapper.properties
-
-# ----- IDE & Editor -----
-.idea/
-*.iml
-.vscode/settings.json
-.vscode/.ropeproject
-*.swp
-*.swo
-*~
-.DS_Store
-Thumbs.db
-
-# ----- Logs -----
-*.log
-logs/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-
-# ----- Docker -----
-# Keep docker files, ignore runtime volumes
-docker-data/
-
-# ----- OS -----
-.DS_Store
-desktop.ini
-
-# ----- Testing -----
 coverage/
-frontend/coverage/
-*.lcov
-playwright-report/
-test-results/
-
-# ----- Misc -----
-*.tmp
-*.temp
-.cache/
+.vite/
+.env
+.env.*
+!.env.example
+*.local
+.DS_Store
+*.log
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
 
