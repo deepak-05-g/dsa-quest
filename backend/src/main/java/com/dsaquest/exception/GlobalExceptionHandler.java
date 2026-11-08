@@ -1,9 +1,11 @@
 package com.dsaquest.exception;
 
 import com.dsaquest.dto.ErrorResponse;
+import com.dsaquest.auth.service.AuthenticationService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.NoHandlerFoundException;
@@ -18,6 +20,37 @@ public class GlobalExceptionHandler {
             NoHandlerFoundException exception,
             HttpServletRequest request) {
         return error(HttpStatus.NOT_FOUND, exception.getMessage(), request.getRequestURI());
+    }
+
+    @ExceptionHandler(AuthenticationService.AuthenticationValidationException.class)
+    ResponseEntity<ErrorResponse> handleValidation(
+            AuthenticationService.AuthenticationValidationException exception,
+            HttpServletRequest request) {
+        return error(HttpStatus.BAD_REQUEST, exception.getMessage(), request.getRequestURI());
+    }
+
+    @ExceptionHandler(AuthenticationService.DuplicateEmailException.class)
+    ResponseEntity<ErrorResponse> handleDuplicateEmail(HttpServletRequest request) {
+        return error(HttpStatus.CONFLICT, "An account with this email already exists", request.getRequestURI());
+    }
+
+    @ExceptionHandler({
+            AuthenticationService.InvalidCredentialsException.class,
+            AuthenticationService.InvalidRefreshTokenException.class
+    })
+    ResponseEntity<ErrorResponse> handleAuthenticationFailure(HttpServletRequest request) {
+        return error(HttpStatus.UNAUTHORIZED, "Invalid authentication credentials", request.getRequestURI());
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    ResponseEntity<ErrorResponse> handleInvalidRequest(
+            MethodArgumentNotValidException exception,
+            HttpServletRequest request) {
+        String message = exception.getBindingResult().getFieldErrors().stream()
+                .findFirst()
+                .map(fieldError -> fieldError.getField() + ": " + fieldError.getDefaultMessage())
+                .orElse("Request validation failed");
+        return error(HttpStatus.BAD_REQUEST, message, request.getRequestURI());
     }
 
     @ExceptionHandler(Exception.class)
