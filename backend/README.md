@@ -31,9 +31,29 @@ cd backend
 
 The service listens on `http://localhost:8080`.
 
+When port `5432` is already occupied, choose another host port without
+changing the container port:
+
+```powershell
+$env:DB_PORT = "55432"
+docker compose up -d postgres
+$env:DB_URL = "jdbc:postgresql://localhost:55432/dsaquest"
+```
+
+The database integration test is opt-in because it requires a running
+PostgreSQL instance. With the Compose service running:
+
+```powershell
+$env:DSA_QUEST_DB_INTEGRATION = "true"
+$env:DB_URL = "jdbc:postgresql://localhost:55432/dsaquest"
+$env:DB_USERNAME = "dsaquest"
+$env:DB_PASSWORD = "your-local-password"
+.\mvnw.cmd -Dtest=DsaQuestApplicationIntegrationTest test
+```
+
 ## Endpoints
 
 - `GET /api/v1/health`
-- `GET /actuator/health`
+- `GET /actuator/health` (includes database component status)
 - `GET /swagger-ui.html`
 - `GET /v3/api-docs`
