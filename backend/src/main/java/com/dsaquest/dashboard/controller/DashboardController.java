@@ -1,6 +1,7 @@
 package com.dsaquest.dashboard.controller;
 
 import com.dsaquest.auth.entity.User;
+import com.dsaquest.auth.entity.Role;
 import com.dsaquest.auth.repository.UserRepository;
 import com.dsaquest.dashboard.dto.DashboardResponse;
 import com.dsaquest.dashboard.service.DashboardService;
@@ -37,6 +38,9 @@ public class DashboardController {
         User user = userRepository.findById(userId)
                 .filter(User::isEnabled)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED));
+        if (user.getRole() != Role.STUDENT) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Student dashboard access required");
+        }
         return dashboardService.getDashboard(user);
     }
 }

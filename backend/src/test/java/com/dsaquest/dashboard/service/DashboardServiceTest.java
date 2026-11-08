@@ -24,4 +24,29 @@ class DashboardServiceTest {
                 .extracting("currentDays", "longestDays")
                 .containsExactly(0, 0);
     }
+
+    @Test
+    void calculatesCurrentAndLongestStreaksAcrossGaps() {
+        LocalDate today = LocalDate.of(2026, 1, 10);
+        assertThat(DashboardService.calculateStreak(
+                List.of(today, today.minusDays(1), today.minusDays(2), today.minusDays(4)),
+                today))
+                .extracting("currentDays", "longestDays")
+                .containsExactly(3, 3);
+        assertThat(DashboardService.calculateStreak(
+                List.of(today.minusDays(1), today.minusDays(2), today.minusDays(4), today.minusDays(5)),
+                today))
+                .extracting("currentDays", "longestDays")
+                .containsExactly(2, 2);
+    }
+
+    @Test
+    void doesNotCountAStaleRunAsCurrent() {
+        LocalDate today = LocalDate.of(2026, 1, 10);
+        assertThat(DashboardService.calculateStreak(
+                List.of(today.minusDays(3), today.minusDays(4)),
+                today))
+                .extracting("currentDays", "longestDays")
+                .containsExactly(0, 2);
+    }
 }

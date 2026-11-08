@@ -58,4 +58,19 @@ class DashboardControllerIntegrationTest {
                 .andExpect(jsonPath("$.learning.publishedLessons", is(0)))
                 .andExpect(jsonPath("$.continueLearning").doesNotExist());
     }
+
+    @Test
+    void rejectsAdminDashboardAccess() throws Exception {
+        User admin = userRepository.save(new User(
+                UUID.randomUUID(),
+                "Dashboard Integration Admin",
+                "dashboard-admin-" + UUID.randomUUID() + "@example.test",
+                "not-a-login-password",
+                com.dsaquest.auth.entity.Role.ADMIN));
+        String accessToken = jwtService.createAccessToken(admin).value();
+
+        mockMvc.perform(get("/api/v1/dashboard")
+                        .header("Authorization", "Bearer " + accessToken))
+                .andExpect(status().isForbidden());
+    }
 }
