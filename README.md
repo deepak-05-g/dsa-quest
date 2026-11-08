@@ -4,9 +4,9 @@
 
 DSA QUEST is a gamified Data Structures and Algorithms learning platform for students preparing for coding interviews. It will combine structured learning, visual explanations, Java practice, and measurable progression without sacrificing technical depth.
 
-## Stage 1 foundation
+## Current foundation
 
-Stage 1 establishes the frontend application shell and repository architecture. It intentionally does not include authentication, lessons, dashboards, visualizers, code execution, or progression data.
+The repository now includes authentication and the Stage 5 student dashboard/progress foundation. The dashboard reports only persisted data; with no published lessons or verified activity, it intentionally displays zero values and useful empty states.
 
 ## Technology stack
 
@@ -33,10 +33,22 @@ frontend/
     types/        Shared frontend types
     App.tsx
     main.tsx
-backend/          Reserved for the future Spring Boot service
+backend/
+  src/main/java/com/dsaquest/
+    auth/          Authentication, JWT, refresh sessions
+    dashboard/     Authenticated dashboard API and aggregation
+    ...
 ```
 
-The backend will expose versioned REST endpoints under `/api/v1`. The frontend will access them through typed service modules, with the API base URL supplied by environment configuration. Authentication, persistence, and business logic remain future-stage work.
+The backend exposes versioned REST endpoints under `/api/v1`. `GET /api/v1/dashboard` derives the authenticated user's XP, level, streak, learning progress, achievements, and recent activity from PostgreSQL. The frontend accesses it through a typed service module and never stores refresh tokens in browser storage.
+
+## Dashboard rules
+
+- XP is summed from backend-owned `xp_transactions` records.
+- Level 1 starts at 0 XP; level `n` begins at `100 * (n - 1)^2` XP.
+- Streaks use verified `daily_activity` records in UTC; dashboard visits do not create activity.
+- Learning progress counts only published lessons and persisted completion records.
+- No curriculum PDF or lesson records are currently present in the repository, so learning, achievement, and activity sections remain honest empty states.
 
 ## Prerequisites
 
@@ -78,4 +90,3 @@ Copy `frontend/.env.example` to `frontend/.env.local` for local configuration. N
 5. **Stage 5:** Isolated code execution
 6. **Stage 6:** Administration, testing, and quality
 7. **Stage 7:** Deployment and release
-

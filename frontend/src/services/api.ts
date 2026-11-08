@@ -44,7 +44,7 @@ function csrfToken(): string | undefined {
     ?.split('=')[1]
 }
 
-async function request<T>(
+export async function request<T>(
   path: string,
   options: RequestInit = {},
   accessToken?: string,

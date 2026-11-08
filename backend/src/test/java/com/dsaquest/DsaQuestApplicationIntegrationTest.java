@@ -30,10 +30,13 @@ class DsaQuestApplicationIntegrationTest {
                 Integer.class);
 
         assertThat(migrationTableCount).isEqualTo(1);
-        assertThat(appliedMigrationCount).isGreaterThanOrEqualTo(3);
+        assertThat(appliedMigrationCount).isGreaterThanOrEqualTo(4);
         assertThat(jdbcTemplate.queryForObject("SELECT 1", Integer.class)).isEqualTo(1);
         assertThat(jdbcTemplate.queryForObject(
                 "SELECT COUNT(*) FROM information_schema.tables WHERE table_name IN ('users', 'refresh_tokens')",
                 Integer.class)).isEqualTo(2);
+        assertThat(jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM information_schema.tables WHERE table_name IN ('xp_transactions', 'daily_activity', 'lessons', 'learning_progress', 'achievements', 'user_achievements')",
+                Integer.class)).isEqualTo(6);
     }
 }
