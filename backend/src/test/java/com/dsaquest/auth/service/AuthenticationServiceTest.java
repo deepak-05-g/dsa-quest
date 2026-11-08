@@ -1,6 +1,7 @@
 package com.dsaquest.auth.service;
 
 import com.dsaquest.auth.dto.RegisterRequest;
+import com.dsaquest.auth.entity.RefreshToken;
 import com.dsaquest.auth.entity.Role;
 import com.dsaquest.auth.entity.User;
 import com.dsaquest.auth.repository.RefreshTokenRepository;
@@ -12,9 +13,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -80,5 +83,74 @@ class AuthenticationServiceTest {
                 .isInstanceOf(AuthenticationService.DuplicateEmailException.class);
 
         verifyNoInteractions(passwordEncoder, refreshTokenRepository, jwtService);
+    }
+
+    @Test
+    void revokesRefreshTokenFamilyWhenAReusedTokenIsPresented() {
+        User user = new User(
+                UUID.randomUUID(),
+                "Ada Lovelace",
+                "ada@example.com",
+                "hashed-password",
+                Role.STUDENT);
+        UUID familyId = UUID.randomUUID();
+        RefreshToken token = new RefreshToken(
+                UUID.randomUUID(),
+                user,
+                new TokenHashService().hash("old-refresh-token"),
+                familyId,
+                Instant.now().plus(Duration.ofDays(1)));
+        token.revoke();
+        when(refreshTokenRepository.findByTokenHash(new TokenHashService().hash("old-refresh-token")))
+                .thenReturn(java.util.Optional.of(token));
+
+        org.assertj.core.api.Assertions.assertThatThrownBy(() -> service.refresh("old-refresh-token"))
+                .isInstanceOf(AuthenticationService.InvalidRefreshTokenException.class);
+
+        verify(refreshTokenRepository).revokeFamily(eq(familyId), any(Instant.class));
+        verifyNoInteractions(jwtService);
+    }
+
+    @Test
+    void rejectsExpiredRefreshToken() {
+        User user = new User(
+                UUID.randomUUID(),
+                "Ada Lovelace",
+                "ada@example.com",
+                "hashed-password",
+                Role.STUDENT);
+        RefreshToken token = new RefreshToken(
+                UUID.randomUUID(),
+                user,
+                new TokenHashService().hash("expired-refresh-token"),
+                UUID.randomUUID(),
+                Instant.now().minus(Duration.ofMinutes(1)));
+        when(refreshTokenRepository.findByTokenHash(new TokenHashService().hash("expired-refresh-token")))
+                .thenReturn(java.util.Optional.of(token));
+
+        org.assertj.core.api.Assertions.assertThatThrownBy(() -> service.refresh("expired-refresh-token"))
+                .isInstanceOf(AuthenticationService.InvalidRefreshTokenException.class);
+
+        assertThat(token.getRevokedAt()).isNotNull();
+        verifyNoInteractions(jwtService);
+    }
+
+    @Test
+    void rejectsDisabledUserAtLogin() {
+        User user = new User(
+                UUID.randomUUID(),
+                "Ada Lovelace",
+                "ada@example.com",
+                "hashed-password",
+                Role.STUDENT);
+        ReflectionTestUtils.setField(user, "enabled", false);
+        when(userRepository.findByEmail("ada@example.com")).thenReturn(java.util.Optional.of(user));
+        when(passwordEncoder.matches("StrongPassword123", "hashed-password")).thenReturn(true);
+
+        org.assertj.core.api.Assertions.assertThatThrownBy(() -> service.login(
+                        new com.dsaquest.auth.dto.LoginRequest("ada@example.com", "StrongPassword123")))
+                .isInstanceOf(AuthenticationService.InvalidCredentialsException.class);
+
+        verifyNoInteractions(refreshTokenRepository, jwtService);
     }
 }

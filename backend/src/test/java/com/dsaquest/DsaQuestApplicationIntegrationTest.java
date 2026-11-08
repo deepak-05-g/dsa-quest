@@ -30,7 +30,10 @@ class DsaQuestApplicationIntegrationTest {
                 Integer.class);
 
         assertThat(migrationTableCount).isEqualTo(1);
-        assertThat(appliedMigrationCount).isEqualTo(1);
+        assertThat(appliedMigrationCount).isGreaterThanOrEqualTo(3);
         assertThat(jdbcTemplate.queryForObject("SELECT 1", Integer.class)).isEqualTo(1);
+        assertThat(jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM information_schema.tables WHERE table_name IN ('users', 'refresh_tokens')",
+                Integer.class)).isEqualTo(2);
     }
 }

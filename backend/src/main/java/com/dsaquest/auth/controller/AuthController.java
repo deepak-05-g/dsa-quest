@@ -6,7 +6,6 @@ import com.dsaquest.auth.dto.RegisterRequest;
 import com.dsaquest.auth.dto.UserResponse;
 import com.dsaquest.auth.service.AuthenticationService;
 import com.dsaquest.auth.service.AuthenticationService.IssuedSession;
-import com.dsaquest.auth.security.JwtAuthenticationFilter;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -80,11 +79,9 @@ public class AuthController {
     @Operation(summary = "Rotate the refresh token cookie")
     public ResponseEntity<AuthResponse> refresh(
             @CookieValue(name = REFRESH_COOKIE, required = false) String cookieToken,
-            @RequestBody(required = false) com.dsaquest.auth.dto.RefreshRequest body,
             HttpServletRequest httpRequest,
             HttpServletResponse httpResponse) {
-        String token = cookieToken != null ? cookieToken : body == null ? null : body.refreshToken();
-        return sessionResponse(authenticationService.refresh(token), httpRequest, httpResponse);
+        return sessionResponse(authenticationService.refresh(cookieToken), httpRequest, httpResponse);
     }
 
     @PostMapping("/logout")
@@ -122,19 +119,24 @@ public class AuthController {
                 .sameSite(sameSite)
                 .path("/api/v1/auth")
                 .maxAge(refreshTokenTtl);
-        if (!cookieDomain.isBlank()) {
-            builder.domain(cookieDomain);
-        }
+        applyDomain(builder);
         response.addHeader(HttpHeaders.SET_COOKIE, builder.build().toString());
     }
 
     private void clearRefreshCookie(HttpServletResponse response) {
-        response.addHeader(HttpHeaders.SET_COOKIE, ResponseCookie.from(REFRESH_COOKIE, "")
+        ResponseCookie.ResponseCookieBuilder builder = ResponseCookie.from(REFRESH_COOKIE, "")
                 .httpOnly(true)
                 .secure(secureCookie)
                 .sameSite(sameSite)
                 .path("/api/v1/auth")
-                .maxAge(Duration.ZERO)
-                .build().toString());
+                .maxAge(Duration.ZERO);
+        applyDomain(builder);
+        response.addHeader(HttpHeaders.SET_COOKIE, builder.build().toString());
+    }
+
+    private void applyDomain(ResponseCookie.ResponseCookieBuilder builder) {
+        if (!cookieDomain.isBlank()) {
+            builder.domain(cookieDomain);
+        }
     }
 }

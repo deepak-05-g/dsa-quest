@@ -15,6 +15,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.annotation.Propagation;
 
 import java.security.SecureRandom;
 import java.time.Duration;
@@ -26,6 +27,8 @@ import java.util.UUID;
 public class AuthenticationService {
 
     private static final SecureRandom RANDOM = new SecureRandom();
+    private static final String DUMMY_PASSWORD_HASH =
+            "$2a$10$7EqJtq98hPqEX7fNZaFWoO8Y7D6cJ6mQyHhJ9b8x8hF1i8Y4Y5x2K";
     private final UserRepository userRepository;
     private final RefreshTokenRepository refreshTokenRepository;
     private final PasswordEncoder passwordEncoder;
@@ -80,13 +83,15 @@ public class AuthenticationService {
     @Transactional
     public IssuedSession login(LoginRequest request) {
         User user = userRepository.findByEmail(normalizeEmail(request.email())).orElse(null);
-        if (user == null || !user.isEnabled() || !passwordEncoder.matches(request.password(), user.getPasswordHash())) {
+        String passwordHash = user == null ? DUMMY_PASSWORD_HASH : user.getPasswordHash();
+        boolean passwordMatches = passwordEncoder.matches(request.password(), passwordHash);
+        if (user == null || !user.isEnabled() || !passwordMatches) {
             throw new InvalidCredentialsException();
         }
         return issueSession(user, UUID.randomUUID());
     }
 
-    @Transactional
+    @Transactional(noRollbackFor = InvalidRefreshTokenException.class)
     public IssuedSession refresh(String rawRefreshToken) {
         if (rawRefreshToken == null || rawRefreshToken.isBlank()) {
             throw new InvalidRefreshTokenException();
